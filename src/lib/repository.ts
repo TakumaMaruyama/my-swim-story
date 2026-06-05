@@ -2,7 +2,7 @@ import "server-only";
 
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 
-import { db } from "@/db/client";
+import { db, ensureDatabaseSchema } from "@/db/client";
 import {
   monthlyGoals,
   publicGoals,
@@ -34,10 +34,12 @@ function getNow(): Date {
   return new Date();
 }
 
-function requireDb() {
+async function requireDb() {
   if (!db) {
     throw new Error("DATABASE_URL が設定されていません。Replit Database を有効化してください。");
   }
+
+  await ensureDatabaseSchema();
   return db;
 }
 
@@ -226,7 +228,7 @@ function derivePublicGoalState(goal: PublicGoal, reviews: WeeklyReview[]): Publi
 }
 
 async function ensureSwimmerProfile(userId: string) {
-  const database = requireDb();
+  const database = await requireDb();
   const existing = await database
     .select({ id: swimmerProfiles.id })
     .from(swimmerProfiles)
@@ -250,7 +252,8 @@ async function getLatestPublicGoalByUserId(userId: string): Promise<PublicGoal |
     return null;
   }
 
-  const rows = await db
+  const database = await requireDb();
+  const rows = await database
     .select()
     .from(publicGoals)
     .where(eq(publicGoals.userId, userId))
@@ -271,7 +274,7 @@ export async function upsertUserFromClerk(input: {
     return null;
   }
 
-  const database = requireDb();
+  const database = await requireDb();
   const now = getNow();
   const role = deriveRole(input.email);
   const name = normalizeText(input.name);
@@ -306,7 +309,8 @@ export async function getUserById(userId: string): Promise<User | null> {
     return null;
   }
 
-  const rows = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  const database = await requireDb();
+  const rows = await database.select().from(users).where(eq(users.id, userId)).limit(1);
   return rows[0] ? toUser(rows[0]) : null;
 }
 
@@ -315,7 +319,8 @@ export async function getUserByEmail(email: string): Promise<User | null> {
     return null;
   }
 
-  const rows = await db
+  const database = await requireDb();
+  const rows = await database
     .select()
     .from(users)
     .where(eq(users.email, email.trim().toLowerCase()))
@@ -334,7 +339,7 @@ export async function getAthleteDashboardData(userId: string): Promise<AthleteDa
     return null;
   }
 
-  const database = requireDb();
+  const database = await requireDb();
   const [profileRows, raceRecordRows, storyRows, yearlyGoalRows, monthlyGoalRows, weeklyReviewRows] =
     await Promise.all([
       database.select().from(swimmerProfiles).where(eq(swimmerProfiles.userId, userId)).limit(1),
@@ -387,7 +392,7 @@ export async function saveProfile(
     weeklyTrainingCount?: number;
   },
 ): Promise<void> {
-  const database = requireDb();
+  const database = await requireDb();
   const now = getNow();
 
   await database
@@ -431,7 +436,8 @@ export async function listRaceRecordsByUserId(userId: string): Promise<RaceRecor
     return [];
   }
 
-  const rows = await db
+  const database = await requireDb();
+  const rows = await database
     .select()
     .from(raceRecords)
     .where(eq(raceRecords.userId, userId))
@@ -445,7 +451,8 @@ export async function getRaceRecordForUser(userId: string, recordId: string): Pr
     return null;
   }
 
-  const rows = await db
+  const database = await requireDb();
+  const rows = await database
     .select()
     .from(raceRecords)
     .where(and(eq(raceRecords.id, recordId), eq(raceRecords.userId, userId)))
@@ -466,7 +473,7 @@ export async function saveRaceRecord(
     meetName: string;
   },
 ): Promise<void> {
-  const database = requireDb();
+  const database = await requireDb();
   const now = getNow();
 
   if (input.recordId) {
@@ -499,7 +506,7 @@ export async function saveRaceRecord(
 }
 
 export async function deleteRaceRecord(userId: string, recordId: string): Promise<void> {
-  const database = requireDb();
+  const database = await requireDb();
   await database.delete(raceRecords).where(and(eq(raceRecords.id, recordId), eq(raceRecords.userId, userId)));
 }
 
@@ -508,7 +515,8 @@ export async function getStoryByUserId(userId: string): Promise<SwimmingStory | 
     return null;
   }
 
-  const rows = await db
+  const database = await requireDb();
+  const rows = await database
     .select()
     .from(swimmingStories)
     .where(eq(swimmingStories.userId, userId))
@@ -521,7 +529,7 @@ export async function saveStory(
   userId: string,
   input: Omit<SwimmingStory, "id" | "userId" | "createdAt" | "updatedAt">,
 ): Promise<void> {
-  const database = requireDb();
+  const database = await requireDb();
   const now = getNow();
 
   await database
@@ -566,7 +574,8 @@ export async function listYearlyGoalsByUserId(userId: string): Promise<YearlyGoa
     return [];
   }
 
-  const rows = await db
+  const database = await requireDb();
+  const rows = await database
     .select()
     .from(yearlyGoals)
     .where(eq(yearlyGoals.userId, userId))
@@ -580,7 +589,8 @@ export async function getYearlyGoalForUser(userId: string, goalId: string): Prom
     return null;
   }
 
-  const rows = await db
+  const database = await requireDb();
+  const rows = await database
     .select()
     .from(yearlyGoals)
     .where(and(eq(yearlyGoals.id, goalId), eq(yearlyGoals.userId, userId)))
@@ -606,7 +616,7 @@ export async function saveYearlyGoal(
     visibility: YearlyGoal["visibility"];
   },
 ): Promise<void> {
-  const database = requireDb();
+  const database = await requireDb();
   const now = getNow();
 
   if (input.goalId) {
@@ -649,7 +659,7 @@ export async function saveYearlyGoal(
 }
 
 export async function deleteYearlyGoal(userId: string, goalId: string): Promise<void> {
-  const database = requireDb();
+  const database = await requireDb();
   await database.delete(yearlyGoals).where(and(eq(yearlyGoals.id, goalId), eq(yearlyGoals.userId, userId)));
 }
 
@@ -658,7 +668,8 @@ export async function listMonthlyGoalsByUserId(userId: string): Promise<MonthlyG
     return [];
   }
 
-  const rows = await db
+  const database = await requireDb();
+  const rows = await database
     .select()
     .from(monthlyGoals)
     .where(eq(monthlyGoals.userId, userId))
@@ -672,7 +683,8 @@ export async function getMonthlyGoalForUser(userId: string, goalId: string): Pro
     return null;
   }
 
-  const rows = await db
+  const database = await requireDb();
+  const rows = await database
     .select()
     .from(monthlyGoals)
     .where(and(eq(monthlyGoals.id, goalId), eq(monthlyGoals.userId, userId)))
@@ -695,7 +707,7 @@ export async function saveMonthlyGoal(
     visibility: MonthlyGoal["visibility"];
   },
 ): Promise<void> {
-  const database = requireDb();
+  const database = await requireDb();
   const now = getNow();
 
   if (input.goalId) {
@@ -732,7 +744,7 @@ export async function saveMonthlyGoal(
 }
 
 export async function deleteMonthlyGoal(userId: string, goalId: string): Promise<void> {
-  const database = requireDb();
+  const database = await requireDb();
   await database.delete(monthlyGoals).where(and(eq(monthlyGoals.id, goalId), eq(monthlyGoals.userId, userId)));
 }
 
@@ -741,7 +753,8 @@ export async function listWeeklyReviewsByUserId(userId: string): Promise<WeeklyR
     return [];
   }
 
-  const rows = await db
+  const database = await requireDb();
+  const rows = await database
     .select()
     .from(weeklyReviews)
     .where(eq(weeklyReviews.userId, userId))
@@ -755,7 +768,8 @@ export async function getWeeklyReviewForUser(userId: string, reviewId: string): 
     return null;
   }
 
-  const rows = await db
+  const database = await requireDb();
+  const rows = await database
     .select()
     .from(weeklyReviews)
     .where(and(eq(weeklyReviews.id, reviewId), eq(weeklyReviews.userId, userId)))
@@ -780,7 +794,7 @@ export async function saveWeeklyReview(
     visibility: WeeklyReview["visibility"];
   },
 ): Promise<void> {
-  const database = requireDb();
+  const database = await requireDb();
   const now = getNow();
 
   if (input.reviewId) {
@@ -821,7 +835,7 @@ export async function saveWeeklyReview(
 }
 
 export async function deleteWeeklyReview(userId: string, reviewId: string): Promise<void> {
-  const database = requireDb();
+  const database = await requireDb();
   await database.delete(weeklyReviews).where(and(eq(weeklyReviews.id, reviewId), eq(weeklyReviews.userId, userId)));
 }
 
@@ -841,7 +855,7 @@ export async function savePublicGoalRequest(
     publicProcessText: string;
   },
 ): Promise<void> {
-  const database = requireDb();
+  const database = await requireDb();
   const now = getNow();
 
   const validYearlyGoalId =
@@ -911,7 +925,7 @@ export async function updatePublicGoalStatus(
   status: PublicGoal["status"],
   adminUserId: string,
 ): Promise<void> {
-  const database = requireDb();
+  const database = await requireDb();
   const now = getNow();
 
   await database
@@ -940,7 +954,7 @@ export async function getAdminDashboardStats(): Promise<{
     };
   }
 
-  const database = requireDb();
+  const database = await requireDb();
   const monday = getMonday();
 
   const [athletes, weekly, pending, approved] = await Promise.all([
@@ -972,7 +986,7 @@ export async function listAthletes(filter?: { search?: string; grade?: string })
     return [];
   }
 
-  const database = requireDb();
+  const database = await requireDb();
   const allUsers = await database
     .select()
     .from(users)
@@ -1073,7 +1087,7 @@ export async function listPublicGoalRequestsForAdmin(): Promise<
     return [];
   }
 
-  const database = requireDb();
+  const database = await requireDb();
   const goals = await database.select().from(publicGoals).orderBy(desc(publicGoals.updatedAt));
 
   const userIds = Array.from(new Set(goals.map((goal) => goal.userId)));
@@ -1120,7 +1134,7 @@ export async function listApprovedPublicGoals(): Promise<PublicGoalCard[]> {
     return [];
   }
 
-  const database = requireDb();
+  const database = await requireDb();
   const goalRows = await database
     .select()
     .from(publicGoals)
