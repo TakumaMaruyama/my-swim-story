@@ -1,6 +1,7 @@
+import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 
-import { logoutAction } from "@/app/actions";
+import { displayName } from "@/lib/repository";
 import type { SessionUser } from "@/lib/types";
 
 export function AppShell({
@@ -31,7 +32,7 @@ export function AppShell({
             {currentUser ? (
               <>
                 <span className="rounded-full bg-cyan-50 px-3 py-2 text-cyan-700">
-                  {currentUser.nickname}
+                  {displayName(currentUser)}
                 </span>
                 <Link
                   href={isAdmin ? "/admin/dashboard" : "/mypage"}
@@ -39,14 +40,9 @@ export function AppShell({
                 >
                   {isAdmin ? "管理画面" : "マイページ"}
                 </Link>
-                <form action={logoutAction}>
-                  <button
-                    type="submit"
-                    className="rounded-full border border-slate-200 bg-white px-3 py-2 text-slate-600 transition hover:border-slate-300 hover:text-slate-900"
-                  >
-                    ログアウト
-                  </button>
-                </form>
+                <div className="rounded-full border border-slate-200 bg-white p-1.5">
+                  <UserButton afterSignOutUrl="/" />
+                </div>
               </>
             ) : (
               <>

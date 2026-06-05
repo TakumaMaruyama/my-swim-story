@@ -1,1 +1,0 @@
-ALTER TABLE "meets" ADD COLUMN "meet_date" date;

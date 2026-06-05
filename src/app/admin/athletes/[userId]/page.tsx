@@ -10,7 +10,7 @@ import {
   VISIBILITY_LABELS,
 } from "@/lib/constants";
 import { requireAdmin } from "@/lib/auth";
-import { getAdminAthleteDetail } from "@/lib/repository";
+import { displayName, getAdminAthleteDetail } from "@/lib/repository";
 import { formatDateShort, formatMonth } from "@/lib/utils";
 
 function PrivateNotice() {
@@ -43,7 +43,7 @@ export default async function AdminAthleteDetailPage({
     <div className="space-y-6">
       <PageHeader
         eyebrow="ATHLETE DETAIL"
-        title={`${detail.user.name} さんの詳細`}
+        title={`${displayName(detail.user)} さんの詳細`}
         description="visibility が private の項目は表示せず、本人のみ閲覧として扱います。"
         action={
           <Link
@@ -59,11 +59,11 @@ export default async function AdminAthleteDetailPage({
           <dl className="grid gap-4 text-sm text-slate-600">
             <div>
               <dt className="font-semibold text-slate-900">氏名</dt>
-              <dd>{detail.user.name}</dd>
+              <dd>{detail.user.name ?? "未入力"}</dd>
             </div>
             <div>
               <dt className="font-semibold text-slate-900">ニックネーム</dt>
-              <dd>{detail.user.nickname}</dd>
+              <dd>{detail.user.nickname ?? "未入力"}</dd>
             </div>
             <div>
               <dt className="font-semibold text-slate-900">メールアドレス</dt>
@@ -71,7 +71,7 @@ export default async function AdminAthleteDetailPage({
             </div>
             <div>
               <dt className="font-semibold text-slate-900">学年</dt>
-              <dd>{detail.user.grade}</dd>
+              <dd>{detail.user.grade ?? "未入力"}</dd>
             </div>
             <div>
               <dt className="font-semibold text-slate-900">所属</dt>

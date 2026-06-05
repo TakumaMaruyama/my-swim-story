@@ -14,7 +14,7 @@ export default async function ProfilePage({
 }: {
   searchParams?: SearchParamsInput;
 }) {
-  const currentUser = await requireAthlete();
+  const currentUser = await requireAthlete({ allowIncompleteProfile: true });
   const dashboard = await getAthleteDashboardData(currentUser.id);
   const params = await readSearchParams(searchParams);
   const message = params.get("message");
@@ -41,7 +41,13 @@ export default async function ProfilePage({
             <label htmlFor="name" className="text-sm font-semibold text-slate-900">
               氏名
             </label>
-            <input id="name" name="name" defaultValue={dashboard.user.name} required className={inputClassName} />
+            <input
+              id="name"
+              name="name"
+              defaultValue={dashboard.user.name ?? ""}
+              required
+              className={inputClassName}
+            />
           </div>
           <div className="space-y-2">
             <label htmlFor="nickname" className="text-sm font-semibold text-slate-900">
@@ -50,7 +56,7 @@ export default async function ProfilePage({
             <input
               id="nickname"
               name="nickname"
-              defaultValue={dashboard.user.nickname}
+              defaultValue={dashboard.user.nickname ?? ""}
               required
               className={inputClassName}
             />
@@ -59,7 +65,16 @@ export default async function ProfilePage({
             <label htmlFor="grade" className="text-sm font-semibold text-slate-900">
               学年
             </label>
-            <select id="grade" name="grade" defaultValue={dashboard.user.grade} required className={inputClassName}>
+            <select
+              id="grade"
+              name="grade"
+              defaultValue={dashboard.user.grade ?? ""}
+              required
+              className={inputClassName}
+            >
+              <option value="" disabled>
+                学年を選ぶ
+              </option>
               {GRADE_OPTIONS.map((grade) => (
                 <option key={grade} value={grade}>
                   {grade}

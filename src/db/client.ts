@@ -2,24 +2,23 @@ import "server-only";
 
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
+
+import { isDatabaseConfigured } from "@/lib/env";
 import * as schema from "@/db/schema";
 
 declare global {
   var __pool: Pool | undefined;
 }
 
-function getDatabaseUrl(): string {
-  return process.env.DATABASE_URL ?? "";
-}
-
-const databaseUrl = getDatabaseUrl();
+const databaseUrl = process.env.DATABASE_URL;
 
 const pool =
-  global.__pool ??
-  new Pool(databaseUrl ? { connectionString: databaseUrl } : undefined);
+  isDatabaseConfigured() && databaseUrl
+    ? global.__pool ?? new Pool({ connectionString: databaseUrl })
+    : null;
 
-if (process.env.NODE_ENV !== "production") {
+if (process.env.NODE_ENV !== "production" && pool) {
   global.__pool = pool;
 }
 
-export const db = drizzle(pool, { schema });
+export const db = pool ? drizzle(pool, { schema }) : null;

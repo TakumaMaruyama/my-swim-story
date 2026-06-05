@@ -5,7 +5,7 @@ import {
   PUBLIC_GOAL_STATUS_LABELS,
 } from "@/lib/constants";
 import { requireAdmin } from "@/lib/auth";
-import { listPublicGoalRequestsForAdmin } from "@/lib/repository";
+import { displayName, listPublicGoalRequestsForAdmin } from "@/lib/repository";
 import { readSearchParams, type SearchParamsInput } from "@/lib/search-params";
 
 export default async function AdminPublicGoalsPage({
@@ -35,10 +35,10 @@ export default async function AdminPublicGoalsPage({
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-lg font-semibold text-slate-900">
-                    {user.name} / {goal.displayNickname}
+                    {displayName(user)} / {goal.displayNickname}
                   </p>
                   <p className="mt-1 text-sm text-slate-500">
-                    {PUBLIC_DISPLAY_CATEGORY_LABELS[goal.displayCategory]} / {user.grade}
+                    {PUBLIC_DISPLAY_CATEGORY_LABELS[goal.displayCategory]} / {user.grade ?? "未入力"}
                   </p>
                 </div>
                 <StatusBadge tone={goal.status === "approved" ? "emerald" : goal.status === "rejected" ? "rose" : goal.status === "hidden" ? "slate" : "amber"}>

@@ -6,7 +6,7 @@ import {
   GRADE_OPTIONS,
 } from "@/lib/constants";
 import { requireAdmin } from "@/lib/auth";
-import { listAthletes } from "@/lib/repository";
+import { displayName, listAthletes } from "@/lib/repository";
 import { readSearchParams, type SearchParamsInput } from "@/lib/search-params";
 import { formatDateShort } from "@/lib/utils";
 
@@ -76,11 +76,11 @@ export default async function AdminAthletesPage({
                       href={`/admin/athletes/${item.user.id}`}
                       className="font-semibold text-cyan-700 transition hover:text-cyan-800"
                     >
-                      {item.user.name}
+                      {displayName(item.user)}
                     </Link>
                   </td>
-                  <td className="px-3 py-4">{item.user.nickname}</td>
-                  <td className="px-3 py-4">{item.user.grade}</td>
+                  <td className="px-3 py-4">{item.user.nickname ?? "未入力"}</td>
+                  <td className="px-3 py-4">{item.user.grade ?? "未入力"}</td>
                   <td className="px-3 py-4">{item.profile?.mainEvent || "未入力"}</td>
                   <td className="px-3 py-4">
                     {item.latestWeeklyReview ? formatDateShort(item.latestWeeklyReview.weekStartDate) : "未入力"}

@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { AlertBanner, PageHeader, SectionCard, StatusBadge } from "@/components/common";
 import { requireAthlete } from "@/lib/auth";
-import { getAthleteDashboardData } from "@/lib/repository";
+import { displayName, getAthleteDashboardData } from "@/lib/repository";
 import { PUBLIC_GOAL_STATUS_LABELS } from "@/lib/constants";
 import { readSearchParams, type SearchParamsInput } from "@/lib/search-params";
 import { formatDateShort, formatMonth, hasReviewedThisWeek } from "@/lib/utils";
@@ -88,7 +88,7 @@ export default async function MyPage({
     <div className="space-y-6">
       <PageHeader
         eyebrow="ATHLETE MYPAGE"
-        title={`${dashboard.user.nickname}さんのマイページ`}
+        title={`${displayName(dashboard.user)}さんのマイページ`}
         description="未入力のところから順番に進めれば大丈夫です。物語、年間、月間、週次の流れで使えます。"
       />
       {message ? <AlertBanner tone="success" message={message} /> : null}

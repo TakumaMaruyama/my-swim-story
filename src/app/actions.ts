@@ -8,8 +8,6 @@ import {
   deleteRaceRecord,
   deleteWeeklyReview,
   deleteYearlyGoal,
-  authenticateUser,
-  registerAthlete,
   saveMonthlyGoal,
   saveProfile,
   savePublicGoalRequest,
@@ -20,101 +18,21 @@ import {
   updatePublicGoalStatus,
 } from "@/lib/repository";
 import {
-  loginSchema,
   monthlyGoalSchema,
   profileSchema,
   publicGoalSchema,
   raceRecordSchema,
-  registerSchema,
   storySchema,
   weeklyReviewSchema,
   yearlyGoalSchema,
 } from "@/lib/form-schemas";
-import { clearSession, createSession } from "@/lib/session";
 
 function toMessagePath(path: string, key: "message" | "error", value: string): string {
   return `${path}?${key}=${encodeURIComponent(value)}`;
 }
 
-function firstErrorMessage(error: unknown): string {
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-  return "保存できませんでした。";
-}
-
-export async function logoutAction() {
-  await clearSession();
-  redirect("/");
-}
-
-export async function athleteLoginAction(formData: FormData) {
-  const parsed = loginSchema.safeParse({
-    email: formData.get("email"),
-    password: formData.get("password"),
-  });
-
-  if (!parsed.success) {
-    redirect(toMessagePath("/login", "error", parsed.error.issues[0]?.message ?? "入力内容を確認してください。"));
-  }
-
-  const user = await authenticateUser(parsed.data.email, parsed.data.password, "athlete");
-  if (!user) {
-    redirect(toMessagePath("/login", "error", "メールアドレスかパスワードが違います。"));
-  }
-
-  await createSession(user.id, user.role);
-  redirect("/mypage");
-}
-
-export async function adminLoginAction(formData: FormData) {
-  const parsed = loginSchema.safeParse({
-    email: formData.get("email"),
-    password: formData.get("password"),
-  });
-
-  if (!parsed.success) {
-    redirect(
-      toMessagePath("/admin/login", "error", parsed.error.issues[0]?.message ?? "入力内容を確認してください。"),
-    );
-  }
-
-  const user = await authenticateUser(parsed.data.email, parsed.data.password, "admin");
-  if (!user) {
-    redirect(toMessagePath("/admin/login", "error", "管理者情報が正しくありません。"));
-  }
-
-  await createSession(user.id, user.role);
-  redirect("/admin/dashboard");
-}
-
-export async function registerAthleteAction(formData: FormData) {
-  const parsed = registerSchema.safeParse({
-    name: formData.get("name"),
-    nickname: formData.get("nickname"),
-    email: formData.get("email"),
-    password: formData.get("password"),
-    grade: formData.get("grade"),
-    birthDate: formData.get("birthDate"),
-  });
-
-  if (!parsed.success) {
-    redirect(
-      toMessagePath("/register", "error", parsed.error.issues[0]?.message ?? "入力内容を確認してください。"),
-    );
-  }
-
-  try {
-    const user = await registerAthlete(parsed.data);
-    await createSession(user.id, user.role);
-    redirect(toMessagePath("/mypage", "message", "登録が完了しました。"));
-  } catch (error) {
-    redirect(toMessagePath("/register", "error", firstErrorMessage(error)));
-  }
-}
-
 export async function saveProfileAction(formData: FormData) {
-  const currentUser = await requireAthlete();
+  const currentUser = await requireAthlete({ allowIncompleteProfile: true });
   const parsed = profileSchema.safeParse({
     name: formData.get("name"),
     nickname: formData.get("nickname"),
@@ -138,7 +56,7 @@ export async function saveProfileAction(formData: FormData) {
   }
 
   await saveProfile(currentUser.id, parsed.data);
-  redirect(toMessagePath("/mypage/profile", "message", "プロフィールを保存しました。"));
+  redirect(toMessagePath("/mypage", "message", "プロフィールを保存しました。"));
 }
 
 export async function saveRaceRecordAction(formData: FormData) {

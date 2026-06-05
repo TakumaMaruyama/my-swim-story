@@ -99,7 +99,13 @@ export function hasReviewedThisWeek(reviews: WeeklyReview[]): boolean {
   return reviews.some((review) => review.weekStartDate === monday);
 }
 
-export function toCategoryFromGrade(grade: string): "elementary" | "junior_high" | "high_school" | "other" {
+export function toCategoryFromGrade(
+  grade: string | null | undefined,
+): "elementary" | "junior_high" | "high_school" | "other" {
+  if (!grade) {
+    return "other";
+  }
+
   if (grade.startsWith("小学")) {
     return "elementary";
   }

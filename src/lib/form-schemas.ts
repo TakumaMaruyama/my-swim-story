@@ -16,20 +16,6 @@ const optionalNumber = (min: number, max: number) =>
     z.coerce.number().min(min).max(max).optional(),
   );
 
-export const loginSchema = z.object({
-  email: z.string().email("メールアドレスを確認してください"),
-  password: z.string().min(1, "パスワードを入力してください"),
-});
-
-export const registerSchema = z.object({
-  name: z.string().trim().min(1, "氏名を入力してください").max(50),
-  nickname: z.string().trim().min(1, "ニックネームを入力してください").max(30),
-  email: z.string().trim().email("メールアドレスを確認してください"),
-  password: z.string().min(8, "パスワードは8文字以上で入力してください").max(100),
-  grade: z.string().trim().min(1, "学年を選んでください").max(30),
-  birthDate: z.string().trim().optional(),
-});
-
 export const profileSchema = z.object({
   name: z.string().trim().min(1).max(50),
   nickname: z.string().trim().min(1).max(30),

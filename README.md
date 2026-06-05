@@ -8,15 +8,15 @@
 - Next.js 16 App Router
 - TypeScript
 - Tailwind CSS 4
-- ローカル JSON ストレージ (`data/app-db.json`)
-
-JSON への読み書きは `src/lib/storage.ts` と `src/lib/repository.ts` に寄せてあり、
-将来的に Supabase / PostgreSQL へ置き換えやすい構成にしています。
+- Replit Clerk Auth
+- Replit Database (PostgreSQL)
+- Drizzle ORM / drizzle-kit
 
 ## セットアップ
 
 ```bash
 npm install
+npm run db:migrate
 npm run dev
 ```
 
@@ -29,19 +29,31 @@ npm run build
 npm run start -- -p 5000 -H 0.0.0.0
 ```
 
-## 初期アカウント
+## Replit で必要な設定
 
-### 管理者
+### 1. Auth
 
-- email: `admin@example.com`
-- password: `password`
+- Replit の Auth を `Clerk Auth` にする
+- Email / Password サインアップを有効化する
+- メール確認を有効化する
 
-### 選手
+### 2. Database
 
-- email: `athlete@example.com`
-- password: `password`
+- Replit Database を有効化する
+- `DATABASE_URL` が設定されていることを確認する
 
-初回アクセス時に `data/app-db.json` が自動生成され、サンプルデータも入ります。
+### 3. Secrets
+
+- `ADMIN_EMAILS=admin1@example.com,admin2@example.com`
+- `LLM_API_KEY` は任意
+- Clerk のキーは Replit Auth 有効化時に注入される前提です
+
+## アカウント作成
+
+- 選手: `/register` から誰でも登録できます
+- 管理者: `ADMIN_EMAILS` に入っているメールアドレスで登録すると自動で `admin` になります
+
+固定の初期アカウントや固定パスワードはありません。
 
 ## 主な画面
 
@@ -64,9 +76,10 @@ npm run start -- -p 5000 -H 0.0.0.0
 
 ## 環境変数
 
-必須ではありません。
-
-- `SESSION_SECRET`: セッション署名用の秘密値
+- `DATABASE_URL`: Replit Database の接続先
+- `CLERK_PUBLISHABLE_KEY` または `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+- `CLERK_SECRET_KEY`
+- `ADMIN_EMAILS`: 管理者にしたいメールアドレスをカンマ区切り
 - `LLM_API_KEY`: AI アドバイス用 API キー
 - `LLM_API_BASE_URL`: OpenAI 互換 API を使う場合のベース URL
 - `LLM_MODEL`: AI アドバイス用モデル名
@@ -77,4 +90,5 @@ npm run start -- -p 5000 -H 0.0.0.0
 
 - 公開ページに出るのは `ニックネーム / カテゴリ / 目標 / 行動目標 / 状態` のみです
 - 本名、メールアドレス、生年月日、所属、ベストタイム詳細、競泳物語全文は公開しません
-- データは JSON 保存なので、単一インスタンスでの MVP 運用を想定しています
+- `visibility=private` の内容は管理者画面でも本文を表示しません
+- 開発環境と本番環境では Replit の Auth / Database を分けて運用してください

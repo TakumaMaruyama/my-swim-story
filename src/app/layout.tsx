@@ -1,8 +1,10 @@
 import type { Metadata, Viewport } from "next";
+import { ClerkProvider } from "@clerk/nextjs";
 import { Geist, Geist_Mono } from "next/font/google";
 
 import { AppShell } from "@/components/app-shell";
 import { getCurrentUser } from "@/lib/auth";
+import { getClerkPublishableKey, isClerkConfigured } from "@/lib/env";
 
 import "./globals.css";
 
@@ -33,13 +35,27 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const currentUser = await getCurrentUser();
+  const isAuthEnabled = isClerkConfigured();
+  const publishableKey = getClerkPublishableKey();
+
+  const content = <AppShell currentUser={currentUser}>{children}</AppShell>;
 
   return (
     <html lang="ja">
       <body
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-slate-50 font-sans text-slate-900 antialiased`}
       >
-        <AppShell currentUser={currentUser}>{children}</AppShell>
+        {isAuthEnabled && publishableKey ? (
+          <ClerkProvider
+            publishableKey={publishableKey}
+            signInUrl="/login"
+            signUpUrl="/register"
+          >
+            {content}
+          </ClerkProvider>
+        ) : (
+          content
+        )}
       </body>
     </html>
   );

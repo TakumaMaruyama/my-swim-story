@@ -8,7 +8,7 @@ import {
   PUBLIC_GOAL_STATUS_LABELS,
 } from "@/lib/constants";
 import { requireAthlete } from "@/lib/auth";
-import { getAthleteDashboardData } from "@/lib/repository";
+import { displayName, getAthleteDashboardData } from "@/lib/repository";
 import { readSearchParams, type SearchParamsInput } from "@/lib/search-params";
 import { formatMonth, toCategoryFromGrade } from "@/lib/utils";
 
@@ -97,7 +97,7 @@ export default async function PublicGoalsPage({
                 <input
                   id="displayNickname"
                   name="displayNickname"
-                  defaultValue={currentRequest?.displayNickname ?? dashboard.user.nickname}
+                  defaultValue={currentRequest?.displayNickname ?? displayName(dashboard.user)}
                   required
                   className={inputClassName}
                 />

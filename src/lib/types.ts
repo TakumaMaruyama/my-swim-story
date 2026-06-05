@@ -27,19 +27,17 @@ export type FocusArea =
   | "other";
 
 export type AchievementLevel = "done" | "mostly_done" | "partly_done" | "not_done";
-
 export type PublicGoalStatus = "pending" | "approved" | "rejected" | "hidden";
 export type PublicDisplayCategory = "elementary" | "junior_high" | "high_school" | "other";
 export type PublicDisplayState = "challenge" | "achieved" | "updating";
 
 export interface User {
   id: string;
-  name: string;
-  nickname: string;
+  name: string | null;
+  nickname: string | null;
   email: string;
-  passwordHash: string;
   role: Role;
-  grade: string;
+  grade: string | null;
   birthDate: string | null;
   createdAt: string;
   updatedAt: string;
@@ -154,32 +152,14 @@ export interface PublicGoal {
   updatedAt: string;
 }
 
-export interface DatabaseMeta {
-  version: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface AppDatabase {
-  meta: DatabaseMeta;
-  users: User[];
-  swimmerProfiles: SwimmerProfile[];
-  raceRecords: RaceRecord[];
-  swimmingStories: SwimmingStory[];
-  yearlyGoals: YearlyGoal[];
-  monthlyGoals: MonthlyGoal[];
-  weeklyReviews: WeeklyReview[];
-  publicGoals: PublicGoal[];
-}
-
 export interface SessionUser {
   id: string;
-  name: string;
-  nickname: string;
+  name: string | null;
+  nickname: string | null;
   email: string;
   role: Role;
-  grade: string;
-  birthDate?: string | null;
+  grade: string | null;
+  birthDate: string | null;
 }
 
 export interface AthleteDashboardData {
