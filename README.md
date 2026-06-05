@@ -20,7 +20,7 @@ npm run db:migrate
 npm run dev
 ```
 
-ブラウザで `http://localhost:5000` を開いてください。
+ブラウザで `http://localhost:3000` を開いてください。
 
 本番ビルド確認:
 
